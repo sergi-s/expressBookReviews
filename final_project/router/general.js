@@ -26,9 +26,14 @@ public_users.post("/register", (req, res) => {
     .json({ message: "User registered successfully", user: newUser });
 });
 
-public_users.get("/", function (req, res) {
-  const bookList = Object.values(books);
-  return res.status(200).json({ books: bookList });
+public_users.get("/isbn/:isbn", async function (req, res) {
+  const { isbn } = req.params;
+  try {
+    const result = await getBookDetailsByISBN(isbn);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(404).json({ message: error.message });
+  }
 });
 
 // Get book details based on ISBN
@@ -43,41 +48,26 @@ public_users.get("/isbn/:isbn", function (req, res) {
   return res.status(200).json({ book });
 });
 
-public_users.get("/author/:author", function (req, res) {
+public_users.get("/author/:author", async function (req, res) {
   const { author } = req.params;
 
-  // Filter books based on the specified author
-  const booksByAuthor = Object.values(books).filter(
-    (book) => book.author === author
-  );
-
-  if (booksByAuthor.length === 0) {
-    return res
-      .status(404)
-      .json({ message: "No books found for the specified author" });
+  try {
+    const result = await getBooksByAuthor(author);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(404).json({ message: error.message });
   }
-
-  // Return the book details as JSON
-  return res.status(200).json({ books: booksByAuthor });
 });
 
-// Get all books based on title
-public_users.get("/title/:title", function (req, res) {
-  // Extract title parameter from the request
+public_users.get("/title/:title", async function (req, res) {
   const { title } = req.params;
 
-  // Filter books based on the specified title
-  const booksByTitle = Object.values(books).filter((book) =>
-    book.title.toLowerCase().includes(title.toLowerCase())
-  );
-
-  if (booksByTitle.length === 0) {
-    return res
-      .status(404)
-      .json({ message: "No books found for the specified title" });
+  try {
+    const result = await getBooksByTitle(title);
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(404).json({ message: error.message });
   }
-
-  return res.status(200).json({ books: booksByTitle });
 });
 
 // Get book review
@@ -92,3 +82,41 @@ public_users.get("/review/:isbn", function (req, res) {
 });
 
 module.exports.general = public_users;
+
+//
+
+const getBookList = async () => {
+  return Object.values(books);
+};
+
+const getBookDetailsByISBN = async (isbn) => {
+  const book = books[isbn];
+  if (!book) {
+    throw new Error("Book not found");
+  }
+  return { book };
+};
+
+const getBooksByAuthor = async (author) => {
+  const booksByAuthor = Object.values(books).filter(
+    (book) => book.author === author
+  );
+
+  if (booksByAuthor.length === 0) {
+    throw new Error("No books found for the specified author");
+  }
+
+  return { books: booksByAuthor };
+};
+
+const getBooksByTitle = async (title) => {
+  const booksByTitle = Object.values(books).filter((book) =>
+    book.title.toLowerCase().includes(title.toLowerCase())
+  );
+
+  if (booksByTitle.length === 0) {
+    throw new Error("No books found for the specified title");
+  }
+
+  return { books: booksByTitle };
+};
