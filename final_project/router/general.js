@@ -26,6 +26,15 @@ public_users.post("/register", (req, res) => {
     .json({ message: "User registered successfully", user: newUser });
 });
 
+public_users.get("/", async function (req, res) {
+  try {
+    const bookList = await getBookList();
+    return res.status(200).json({ books: bookList });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 public_users.get("/isbn/:isbn", async function (req, res) {
   const { isbn } = req.params;
   try {
