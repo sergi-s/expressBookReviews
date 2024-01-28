@@ -68,7 +68,9 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
 
   // Check if the user has a review for the book
   if (!book.reviews[username]) {
-    return res.status(404).json({ message: "Review not found for the current user" });
+    return res
+      .status(404)
+      .json({ message: "Review not found for the current user" });
   }
 
   // Delete the review for the current user
@@ -76,7 +78,6 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
 
   return res.status(200).json({ message: "Review deleted successfully", book });
 });
-
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
